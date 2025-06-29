@@ -21,6 +21,7 @@ db.Contribution = require("../models/contributionModel")(sequelize, DataTypes);
 db.CommunityCampaign = require("../models/communityCampaignModel")(sequelize, DataTypes);
 db.CommunityMemberModel = require("../models/communityMemberModel")(sequelize, DataTypes);
 db.Post = require("../models/postModel")(sequelize, DataTypes);
+db.CommunityInvitation = require("../models/communityInvitationModel")(sequelize, DataTypes);
 // db.User.hasMany(db.Community);
  
 
@@ -49,9 +50,14 @@ db.Campaign.belongsTo(db.User);
 db.Campaign.hasMany(db.Contribution);
 db.Contribution.belongsTo(db.Campaign);
 
+// Community Invitation associations
+db.CommunityInvitation.belongsTo(db.User, { foreignKey: 'invited_by', as: 'inviter' });
+db.CommunityInvitation.belongsTo(db.User, { foreignKey: 'invited_user_id', as: 'invitee' });
+db.CommunityInvitation.belongsTo(db.Community, { foreignKey: 'community_id', as: 'community' });
 
-
-
+db.User.hasMany(db.CommunityInvitation, { foreignKey: 'invited_by', as: 'sentInvitations' });
+db.User.hasMany(db.CommunityInvitation, { foreignKey: 'invited_user_id', as: 'receivedInvitations' });
+db.Community.hasMany(db.CommunityInvitation, { foreignKey: 'community_id', as: 'invitations' });
 
 sequelize
   .authenticate()
@@ -62,13 +68,13 @@ sequelize
     console.error("Unable to connect to the database:", err);
   });
 
-/* sequelize
+sequelize
   .sync({ force: true })
   .then(() => {
     console.log("Database & tables created!");
   })
   .catch((error) => {
     console.error("Error creating database & tables:", error);
-//   });  */
+   });  
 
 module.exports = db;
